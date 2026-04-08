@@ -8,7 +8,10 @@ import LivePage from '@/pages/LivePage';
 import HistoryPage from '@/pages/HistoryPage';
 import ProfilePage from '@/pages/ProfilePage';
 import ContactsPage from '@/pages/ContactsPage';
+import OwnerApp from '@/pages/owner/OwnerApp';
 import { User, apiMe, apiLogout } from '@/lib/api';
+
+const isOwnerPath = window.location.pathname.startsWith('/owner');
 
 interface Notification {
   id: number;
@@ -31,7 +34,7 @@ const initialNotifs: Notification[] = [
   { id: 3, type: 'new', text: 'Новый лот: Бриллиантовое кольцо, Tiffany & Co. 1950-е', time: '10:00' },
 ];
 
-export default function App() {
+function AuctionApp() {
   const [page, setPage] = useState('home');
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifs);
   const [toast, setToast] = useState<ToastNotif | null>(null);
@@ -135,4 +138,9 @@ export default function App() {
       </footer>
     </div>
   );
+}
+
+export default function App() {
+  if (isOwnerPath) return <OwnerApp />;
+  return <AuctionApp />;
 }
