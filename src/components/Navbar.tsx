@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import Icon from '@/components/ui/icon';
+import { User } from '@/lib/api';
 
 interface NavbarProps {
   currentPage: string;
   onNavigate: (page: string) => void;
   notifications: Notification[];
   onClearNotification: (id: number) => void;
+  user: User | null;
+  onLoginClick: () => void;
+  onLogout: () => void;
 }
 
 interface Notification {
@@ -24,7 +28,7 @@ const navItems = [
   { id: 'contacts', label: 'Контакты' },
 ];
 
-export default function Navbar({ currentPage, onNavigate, notifications, onClearNotification }: NavbarProps) {
+export default function Navbar({ currentPage, onNavigate, notifications, onClearNotification, user, onLoginClick, onLogout }: NavbarProps) {
   const [notifOpen, setNotifOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -110,13 +114,28 @@ export default function Navbar({ currentPage, onNavigate, notifications, onClear
             )}
           </div>
 
-          <button
-            onClick={() => onNavigate('profile')}
-            className="hidden md:flex items-center gap-2 px-4 py-2 border border-foreground text-sm font-golos hover:bg-foreground hover:text-background transition-all duration-200"
-          >
-            <Icon name="User" size={14} />
-            Войти
-          </button>
+          {user ? (
+            <div className="hidden md:flex items-center gap-3">
+              <button
+                onClick={() => onNavigate('profile')}
+                className="flex items-center gap-2 px-4 py-2 border border-foreground text-sm font-golos hover:bg-foreground hover:text-background transition-all duration-200"
+              >
+                <Icon name="User" size={14} />
+                {user.name.split(' ')[0]}
+              </button>
+              <button onClick={onLogout} className="p-2 hover:bg-secondary transition-colors" title="Выйти">
+                <Icon name="LogOut" size={16} className="text-muted-foreground" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={onLoginClick}
+              className="hidden md:flex items-center gap-2 px-4 py-2 border border-foreground text-sm font-golos hover:bg-foreground hover:text-background transition-all duration-200"
+            >
+              <Icon name="User" size={14} />
+              Войти
+            </button>
+          )}
 
           {/* Mobile burger */}
           <button className="md:hidden p-2" onClick={() => setMenuOpen(!menuOpen)}>

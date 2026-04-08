@@ -1,5 +1,11 @@
 import { useState } from 'react';
 import Icon from '@/components/ui/icon';
+import { User } from '@/lib/api';
+
+interface ProfilePageProps {
+  user: User | null;
+  onLogout: () => void;
+}
 
 const statCards = [
   { icon: 'Gavel', label: 'Всего аукционов', value: '47' },
@@ -17,7 +23,7 @@ const badges = [
   { icon: '⚡', label: 'Быстрые ставки' },
 ];
 
-export default function ProfilePage() {
+export default function ProfilePage({ user, onLogout }: ProfilePageProps) {
   const [tab, setTab] = useState('info');
   const [notifSettings, setNotifSettings] = useState({
     newLots: true,
@@ -35,7 +41,7 @@ export default function ProfilePage() {
             <p className="font-golos text-xs tracking-[0.3em] uppercase text-gold mb-3">Профиль</p>
             <h1 className="font-cormorant text-5xl font-light">Личный кабинет</h1>
           </div>
-          <button className="flex items-center gap-2 px-5 py-2.5 border border-border font-golos text-sm hover:bg-foreground hover:text-background hover:border-foreground transition-all duration-200">
+          <button onClick={onLogout} className="flex items-center gap-2 px-5 py-2.5 border border-border font-golos text-sm hover:bg-foreground hover:text-background hover:border-foreground transition-all duration-200">
             <Icon name="LogOut" size={14} />
             Выйти
           </button>
@@ -51,11 +57,11 @@ export default function ProfilePage() {
               <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mb-4 border-2 border-gold">
                 <Icon name="User" size={32} className="text-muted-foreground" />
               </div>
-              <h2 className="font-cormorant text-2xl font-light">Александр В.</h2>
-              <p className="font-golos text-sm text-muted-foreground mt-1">alex@example.com</p>
+              <h2 className="font-cormorant text-2xl font-light">{user?.name || 'Гость'}</h2>
+              <p className="font-golos text-sm text-muted-foreground mt-1">{user?.email || ''}</p>
               <div className="flex items-center gap-1.5 mt-3 px-3 py-1.5 bg-gold/10">
                 <Icon name="Award" size={13} className="text-gold" />
-                <span className="font-golos text-xs text-gold font-medium">Золотой статус</span>
+                <span className="font-golos text-xs text-gold font-medium capitalize">{user?.status || 'bronze'} статус</span>
               </div>
             </div>
 
@@ -75,7 +81,7 @@ export default function ProfilePage() {
             {/* Balance */}
             <div className="border border-foreground p-5 bg-foreground text-background">
               <p className="font-golos text-xs uppercase tracking-widest text-background/60 mb-2">Баланс счёта</p>
-              <p className="font-cormorant text-3xl font-light">₽ 250 000</p>
+              <p className="font-cormorant text-3xl font-light">₽ {(user?.balance || 0).toLocaleString('ru-RU')}</p>
               <button className="mt-4 w-full py-2.5 border border-background/30 font-golos text-sm hover:bg-background hover:text-foreground transition-all duration-200">
                 Пополнить
               </button>
@@ -117,10 +123,10 @@ export default function ProfilePage() {
               <div className="space-y-5 animate-fade-in">
                 <div className="grid md:grid-cols-2 gap-5">
                   {[
-                    { label: 'Имя', value: 'Александр', placeholder: 'Ваше имя' },
-                    { label: 'Фамилия', value: 'Волков', placeholder: 'Ваша фамилия' },
-                    { label: 'Email', value: 'alex@example.com', placeholder: 'Email' },
-                    { label: 'Телефон', value: '+7 (999) 123-45-67', placeholder: 'Телефон' },
+                    { label: 'Имя', value: user?.name || '', placeholder: 'Ваше имя' },
+                    { label: 'Email', value: user?.email || '', placeholder: 'Email' },
+                    { label: 'Телефон', value: '', placeholder: 'Телефон' },
+                    { label: 'Статус', value: user?.status || '', placeholder: 'Статус' },
                   ].map((f) => (
                     <div key={f.label}>
                       <label className="font-golos text-xs text-muted-foreground uppercase tracking-widest mb-2 block">{f.label}</label>

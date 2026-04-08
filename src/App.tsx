@@ -1,12 +1,14 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import NotificationToast from '@/components/NotificationToast';
+import AuthModal from '@/components/AuthModal';
 import HomePage from '@/pages/HomePage';
 import CatalogPage from '@/pages/CatalogPage';
 import LivePage from '@/pages/LivePage';
 import HistoryPage from '@/pages/HistoryPage';
 import ProfilePage from '@/pages/ProfilePage';
 import ContactsPage from '@/pages/ContactsPage';
+import { User, apiMe, apiLogout } from '@/lib/api';
 
 interface Notification {
   id: number;
@@ -33,6 +35,12 @@ export default function App() {
   const [page, setPage] = useState('home');
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifs);
   const [toast, setToast] = useState<ToastNotif | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [authOpen, setAuthOpen] = useState(false);
+
+  useEffect(() => {
+    apiMe().then((u) => { if (u) setUser(u); });
+  }, []);
 
   const addNotification = useCallback((text: string, type: 'bid' | 'win' | 'new' = 'bid') => {
     notifCounter++;
@@ -53,9 +61,24 @@ export default function App() {
   }, [addNotification]);
 
   const navigate = useCallback((p: string) => {
+    if ((p === 'history' || p === 'profile') && !user) {
+      setAuthOpen(true);
+      return;
+    }
     setPage(p);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [user]);
+
+  const handleLogout = useCallback(async () => {
+    await apiLogout();
+    setUser(null);
+    setPage('home');
   }, []);
+
+  const handleAuthSuccess = useCallback((u: User) => {
+    setUser(u);
+    addNotification(`Добро пожаловать, ${u.name}!`, 'win');
+  }, [addNotification]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -64,6 +87,9 @@ export default function App() {
         onNavigate={navigate}
         notifications={notifications}
         onClearNotification={clearNotification}
+        user={user}
+        onLoginClick={() => setAuthOpen(true)}
+        onLogout={handleLogout}
       />
 
       <main>
@@ -71,11 +97,18 @@ export default function App() {
         {page === 'catalog' && <CatalogPage onNavigate={navigate} />}
         {page === 'live' && <LivePage onBid={handleBid} />}
         {page === 'history' && <HistoryPage />}
-        {page === 'profile' && <ProfilePage />}
+        {page === 'profile' && <ProfilePage user={user} onLogout={handleLogout} />}
         {page === 'contacts' && <ContactsPage />}
       </main>
 
       <NotificationToast toast={toast} onClose={() => setToast(null)} />
+
+      {authOpen && (
+        <AuthModal
+          onClose={() => setAuthOpen(false)}
+          onSuccess={handleAuthSuccess}
+        />
+      )}
 
       <footer className="border-t border-border mt-16">
         <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
